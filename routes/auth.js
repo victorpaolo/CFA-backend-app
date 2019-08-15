@@ -6,7 +6,8 @@ const createError = require('http-errors');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 
-const User = require('../models/user');
+const User = require('../models/User');
+const Collection = require('../models/Collection');
 
 const {
   isLoggedIn,
@@ -45,8 +46,8 @@ router.post(
   isNotLoggedIn(),
   validationLoggin(),
   async (req, res, next) => {
-    const { username, password } = req.body;
-
+    const { username, password, name, surname, email, birthday } = req.body;
+    console.log(req.body);
     try {
       const user = await User.findOne({ username }, 'username');
       if (user) {
@@ -54,7 +55,7 @@ router.post(
       } else {
         const salt = bcrypt.genSaltSync(10);
         const hashPass = bcrypt.hashSync(password, salt);
-        const newUser = await User.create({ username, password: hashPass });
+        const newUser = await User.create({ username, password: hashPass, name, surname, email, birthday });
         req.session.currentUser = newUser;
         res.status(200).json(newUser);
       }
@@ -64,8 +65,29 @@ router.post(
   }
 );
 
+router.post(
+  '/private/collections',
+  async (req, res, next) => {
+    const { title, userId } = req.body;
+    console.log(req.body);
+    try {
+      const collection = await Collection.findOne({ userId }, 'userId');
+      if (collection) {
+        return next(createError(422));
+      } else {
+        const newCollection = await Collection.create({ title, userId });
+        req.session.currentUser = newCollection;
+        res.status(200).json(newCollection);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+
 router.post('/logout', isLoggedIn(), (req, res, next) => {
-  req.session.destroy();
+  delete req.session.currentUser;
   return res.status(204).send();
 });
 
