@@ -29,14 +29,12 @@ const userSchema = new Schema({
     required: true,
     },
 
+  collections: {
+    type: [ { type: Schema.Types.ObjectId, ref: "Collection"} ]
+  }
 
-}, {
-  timestamps: {
-    createdAt: 'created_at',
-    updatedAt: 'updated_at'
-  },
 });
-
+userSchema.set("timestamps", true);
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

@@ -7,7 +7,6 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
-const Collection = require('../models/Collection');
 
 const {
   isLoggedIn,
@@ -64,27 +63,6 @@ router.post(
     }
   }
 );
-
-router.post(
-  '/private/collections',
-  async (req, res, next) => {
-    const { title, userId } = req.body;
-    console.log(req.body);
-    try {
-      const collection = await Collection.findOne({ userId }, 'userId');
-      if (collection) {
-        return next(createError(422));
-      } else {
-        const newCollection = await Collection.create({ title, userId });
-        req.session.currentUser = newCollection;
-        res.status(200).json(newCollection);
-      }
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
 
 router.post('/logout', isLoggedIn(), (req, res, next) => {
   delete req.session.currentUser;
